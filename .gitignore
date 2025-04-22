@@ -4,9 +4,6 @@
 .vscode
 qodana.yaml
 
-# vm files
-venv/
-
 # media for local development testing
 
 # Byte-compiled / optimized / DLL files
