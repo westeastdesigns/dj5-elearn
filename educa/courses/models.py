@@ -6,6 +6,16 @@ from django.db import models
 
 # Course models. Data Structure = Subject/ Course/ Module/ Content (image|text|file|video)
 class Subject(models.Model):
+    """Subject model describes a general topic under which a course can be included.
+
+    Args:
+        models 
+        title (CharField): title of the topic
+        slug (SlugField): slug for the subject, useful in URLs
+
+    Returns:
+        str: title
+    """
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True)
 
@@ -55,8 +65,21 @@ class Course(models.Model):
 
 
 class Module(models.Model):
+    """Module model describes a section within a course, containing content related to that portion of the course.
+
+    Args:
+        models 
+        course (ForeignKey): links to the course the module is related to
+        title (CharField): the title of the module
+        description (TextField): a text description of the module
+
+    Returns:
+        str: title
+    """
     course = models.ForeignKey(
-        Course, related_name='modules', on_delete=models.CASCADE
+        Course, 
+        related_name='modules', 
+        on_delete=models.CASCADE
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
