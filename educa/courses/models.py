@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -15,26 +17,34 @@ class Subject(models.Model):
 
 
 class Course(models.Model):
-    # owner is the instructor who created this course
+    """Course model describes a course created by its owner, the instructor of that course.
+
+    Args:
+        models 
+        owner (ForeignKey): owner is the instructor who created this course
+        subject (ForeignKey): the subject this course belongs to. it's a ForeignKey field that points to the Subject model
+        title (CharField): title is the title of the course
+        slug (SlugField): slug is the slug for the course, useful in URLs 
+        overview (TextField): textfield column that stores an overview for the course
+        created (DateTimeField): creation date set automatically 
+
+
+    Returns:
+        str: title
+    """
     owner = models.ForeignKey(
         User,
         related_name='courses_created',
         on_delete=models.CASCADE
     )
-    # subject is the subject this course belongs to. 
-    # it's a ForeignKey field that points to the Subject model
     subject = models.ForeignKey(
         Subject,
         related_name='courses',
         on_delete=models.CASCADE
     )
-    # title is the title of the course
     title = models.CharField(max_length=200)
-    # slug is the slug for the course, useful in URLs 
     slug = models.SlugField(max_length=200, unique=True)
-    # textfield column that stores an overview for the course
     overview = models.TextField()
-    # creation date set automatically 
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -53,3 +63,28 @@ class Module(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Content(models.Model):
+    """Content represents the modules contents and defines a generic relation to associate any object with the content object.
+
+    Args:
+        models 
+        module (ForeignKey): a module contains multiple contents, ForeignKey points to Module model
+        content_type (ForeignKey): ForeignKey points to ContentType model
+        object_id (PositiveIntegerField): stores primary key of the related object
+        
+        item (GenericForeignKey): GenericForeignKey field to the related object combining the two previous fields 
+    """
+    module = models.ForeignKey(
+        Module,
+        related_name='contents',
+        on_delete=models.CASCADE
+    )
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE
+    )
+    object_id = models.PositiveIntegerField()
+    item = GenericForeignKey('content_type', 'object_id')
+    
