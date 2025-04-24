@@ -3,6 +3,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
+from .fields import OrderField
+
 
 # Course models. Data Structure = Subject/ Course/ Module/ Content (image|text|file|video)
 class Subject(models.Model):
@@ -72,9 +74,10 @@ class Module(models.Model):
         course (ForeignKey): links to the course the module is related to
         title (CharField): the title of the module
         description (TextField): a text description of the module
+        order (OrderField): ordering is calculated with respect to the course
 
     Returns:
-        str: title
+        str: order and title
     """
     course = models.ForeignKey(
         Course, 
@@ -83,9 +86,13 @@ class Module(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    order = OrderField(blank=True, for_fields=['course'])
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
-        return self.title
+        return f'{self.order}. {self.title}'
 
 
 class Content(models.Model):
@@ -96,8 +103,8 @@ class Content(models.Model):
         module (ForeignKey): a module contains multiple contents, ForeignKey points to Module model
         content_type (ForeignKey): ForeignKey points to ContentType model. Limited ContentType objects to text, video, image, and file
         object_id (PositiveIntegerField): stores primary key of the related object
-        
-        item (GenericForeignKey): GenericForeignKey field to the related object combining the two previous fields 
+        item (GenericForeignKey): GenericForeignKey field to the related object combining the two previous fields
+        order (OrderField): order is calculated with respect to the module field 
     """
     module = models.ForeignKey(
         Module,
@@ -113,6 +120,10 @@ class Content(models.Model):
     )
     object_id = models.PositiveIntegerField()
     item = GenericForeignKey('content_type', 'object_id')
+    order = OrderField(blank=True, for_fields=['module'])
+
+    class Meta:
+        ordering = ['order']
 
 
 class ItemBase(models.Model):
