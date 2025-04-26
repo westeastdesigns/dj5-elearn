@@ -1,6 +1,11 @@
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
+
 from .models import Course
 
 
@@ -24,8 +29,8 @@ class OwnerEditMixin:
         return super().form_valid(form)
 
 
-class OwnerCourseMixin(OwnerMixin):
-    """OwnerCourseMixin inherits OwnerMixin and provides model, fields, and success_url
+class OwnerCourseMixin(OwnerMixin, LoginRequiredMixin, PermissionRequiredMixin):
+    """OwnerCourseMixin inherits OwnerMixin, LoginRequiredMixin, and PermissionRequiredMixin; and provides model, fields, and success_url
 
     Args:
         OwnerMixin (mixin): class being inherited, provides QuerySet
@@ -45,7 +50,7 @@ class OwnerCourseEditMixin(OwnerCourseMixin, OwnerEditMixin):
         OwnerCourseMixin (mixin): class being inherited, also inherits from OwnerMixin
         OwnerEditMixin (mixin): class being inherited, validates forms with form_valid()
     """
-    template_name = 'courses/manage/course.form.html'
+    template_name = 'courses/manage/course/form.html'
     
 
 # Class-based views to create, edit, and delete courses.
@@ -56,6 +61,7 @@ class ManageCourseListView(OwnerCourseMixin, ListView):
         ListView (view): Django's generic ListView
     """
     template_name = 'courses/manage/course/list.html'
+    permission_required = 'courses.view_course'
 
 
 class CourseCreateView(OwnerCourseEditMixin, CreateView):
@@ -65,7 +71,7 @@ class CourseCreateView(OwnerCourseEditMixin, CreateView):
         OwnerCourseEditMixin (mixin): defines the template
         CreateView (view): CourseCreateView subclasses Django's generic CreateView
     """
-    pass
+    permission_required = 'courses.add_course'
 
 
 class CourseUpdateView(OwnerCourseEditMixin, UpdateView):
@@ -75,7 +81,7 @@ class CourseUpdateView(OwnerCourseEditMixin, UpdateView):
         OwnerCourseEditMixin (mixin): defines the template
         UpdateView (view): CourseUpdateView subclasses Django's generic UpdateView
     """
-    pass
+    permission_required = 'courses.change_course'
 
 
 class CourseDeleteView(OwnerCourseMixin, DeleteView):
@@ -86,3 +92,4 @@ class CourseDeleteView(OwnerCourseMixin, DeleteView):
         DeleteView (view): CourseDeleteView inherits from Django's generic DeleteView
     """
     template_name = 'courses/manage/course/delete.html'
+    permission_required = 'courses.delete_course'
